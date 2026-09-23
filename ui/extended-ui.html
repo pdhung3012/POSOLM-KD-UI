@@ -1,1 +1,978 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POTracker Studio — Outage Report Denoising Demo</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --panel:#ffffff;
+      --ink:#152033;
+      --muted:#667085;
+      --line:#dfe5ee;
+      --blue:#2563eb;
+      --blue-2:#dbeafe;
+      --orange:#f59e0b;
+      --orange-2:#fef3c7;
+      --green:#16a34a;
+      --green-2:#dcfce7;
+      --purple:#7c3aed;
+      --purple-2:#ede9fe;
+      --red:#dc2626;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
 
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.08), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(124,58,237,.07), transparent 28%),
+        var(--bg);
+    }
+
+    button,input,select,textarea{font:inherit}
+
+    .app-shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:270px 1fr;
+    }
+
+    aside{
+      background:#101828;
+      color:#fff;
+      padding:26px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:0 6px;
+    }
+
+    .brand-mark{
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      border-radius:14px;
+      background:linear-gradient(135deg,#3b82f6,#7c3aed);
+      font-size:22px;
+      box-shadow:0 10px 25px rgba(59,130,246,.35);
+    }
+
+    .brand strong{font-size:18px}
+    .brand small{display:block;color:#98a2b3;margin-top:3px}
+
+    .nav-group{display:grid;gap:8px}
+    .nav-title{
+      color:#98a2b3;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      padding:0 10px;
+      margin-bottom:4px;
+    }
+
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:11px;
+      padding:11px 12px;
+      border-radius:12px;
+      color:#d0d5dd;
+      text-decoration:none;
+      font-size:14px;
+    }
+
+    .nav-item.active{
+      background:rgba(255,255,255,.1);
+      color:#fff;
+    }
+
+    .aside-note{
+      margin-top:auto;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:15px;
+    }
+
+    .aside-note strong{font-size:14px}
+    .aside-note p{
+      margin:8px 0 0;
+      color:#b8c0cc;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    main{
+      padding:28px;
+      overflow:auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:22px;
+    }
+
+    .topbar h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:-.03em;
+    }
+
+    .topbar p{
+      margin:7px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .status-chip{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:var(--green-2);
+      color:#166534;
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .status-dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 0 4px rgba(22,163,74,.12);
+    }
+
+    .workflow{
+      display:grid;
+      grid-template-columns:1fr 46px 1.15fr;
+      gap:16px;
+      align-items:stretch;
+      margin-bottom:22px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .report-card{
+      display:flex;
+      flex-direction:column;
+      min-height:380px;
+    }
+
+    .card-header{
+      padding:18px 20px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .header-title{
+      display:flex;
+      gap:11px;
+      align-items:center;
+    }
+
+    .icon-box{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:var(--blue-2);
+      color:var(--blue);
+      font-size:19px;
+    }
+
+    .output .icon-box{
+      background:var(--green-2);
+      color:var(--green);
+    }
+
+    .card-header h2{
+      margin:0;
+      font-size:16px;
+    }
+
+    .card-header span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .card-body{
+      padding:18px 20px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:260px;
+      resize:vertical;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      color:var(--ink);
+      background:#fbfcfe;
+      outline:none;
+      line-height:1.55;
+    }
+
+    textarea:focus{
+      border-color:#8bb1ff;
+      box-shadow:0 0 0 4px rgba(37,99,235,.1);
+    }
+
+    .arrow-stage{
+      display:grid;
+      place-items:center;
+      color:var(--blue);
+      font-size:28px;
+    }
+
+    .arrow-line{
+      width:100%;
+      height:3px;
+      background:linear-gradient(90deg,#93c5fd,#2563eb);
+      position:relative;
+      border-radius:999px;
+    }
+
+    .arrow-line::after{
+      content:"";
+      position:absolute;
+      right:-2px;
+      top:50%;
+      transform:translateY(-50%);
+      border-left:12px solid var(--blue);
+      border-top:8px solid transparent;
+      border-bottom:8px solid transparent;
+    }
+
+    .output-box{
+      min-height:260px;
+      margin:0;
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#f8fafc;
+      overflow:auto;
+      white-space:pre-wrap;
+      font-family:"SFMono-Regular",Consolas,monospace;
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .small-actions{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .ghost-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:10px;
+      padding:8px 11px;
+      cursor:pointer;
+      color:var(--ink);
+    }
+
+    .configuration{
+      display:grid;
+      grid-template-columns:1.05fr 1.25fr 1fr;
+      gap:18px;
+      margin-bottom:22px;
+    }
+
+    .section-card{
+      padding:20px;
+    }
+
+    .section-card h3{
+      margin:0 0 4px;
+      font-size:16px;
+    }
+
+    .section-card .subtitle{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .model-group + .model-group{margin-top:16px}
+
+    .group-label{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size:12px;
+      font-weight:800;
+      color:#475467;
+      margin-bottom:9px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .model-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .model-option{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+      cursor:pointer;
+      transition:.2s ease;
+      position:relative;
+      background:#fff;
+    }
+
+    .model-option:hover{transform:translateY(-1px)}
+    .model-option.selected{
+      border-color:var(--blue);
+      box-shadow:0 0 0 3px rgba(37,99,235,.1);
+      background:#f8fbff;
+    }
+
+    .model-option input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .model-name{font-weight:800;font-size:14px}
+    .model-meta{color:var(--muted);font-size:11px;margin-top:4px}
+    .badge{
+      display:inline-block;
+      margin-top:8px;
+      font-size:10px;
+      font-weight:800;
+      padding:4px 7px;
+      border-radius:999px;
+      background:var(--blue-2);
+      color:#1d4ed8;
+    }
+    .small .badge{
+      background:var(--purple-2);
+      color:var(--purple);
+    }
+
+    .denoise-list{
+      display:grid;
+      gap:9px;
+    }
+
+    .denoise-item{
+      display:grid;
+      grid-template-columns:32px 1fr auto;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--line);
+      padding:10px 11px;
+      border-radius:13px;
+      background:#fff;
+      cursor:grab;
+    }
+
+    .denoise-item.disabled{
+      opacity:.5;
+      background:#f8fafc;
+    }
+
+    .priority{
+      width:28px;
+      height:28px;
+      border-radius:9px;
+      display:grid;
+      place-items:center;
+      background:var(--blue-2);
+      color:var(--blue);
+      font-weight:800;
+      font-size:12px;
+    }
+
+    .denoise-name{
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .toggle{
+      width:38px;
+      height:22px;
+      background:#cbd5e1;
+      border-radius:999px;
+      position:relative;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .toggle::after{
+      content:"";
+      width:16px;
+      height:16px;
+      background:#fff;
+      border-radius:50%;
+      position:absolute;
+      left:3px;
+      top:3px;
+      transition:.2s;
+      box-shadow:0 1px 4px rgba(0,0,0,.18);
+    }
+
+    .toggle.on{background:var(--blue)}
+    .toggle.on::after{left:19px}
+
+    .hyper-grid{
+      display:grid;
+      gap:15px;
+    }
+
+    .control label{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:7px;
+    }
+
+    .control output{
+      color:var(--blue);
+      background:var(--blue-2);
+      border-radius:8px;
+      padding:3px 7px;
+      font-size:11px;
+    }
+
+    input[type="range"]{width:100%;accent-color:var(--blue)}
+    select, input[type="number"]{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+
+    .run-panel{
+      padding:18px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+    }
+
+    .pipeline-summary{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .summary-step{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      padding:8px 11px;
+      background:#f8fafc;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:#475467;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .run-btn{
+      border:0;
+      background:linear-gradient(135deg,#2563eb,#7c3aed);
+      color:#fff;
+      padding:13px 20px;
+      border-radius:13px;
+      font-weight:800;
+      cursor:pointer;
+      min-width:190px;
+      box-shadow:0 10px 25px rgba(37,99,235,.25);
+    }
+
+    .run-btn:disabled{opacity:.6;cursor:wait}
+
+    .metrics{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .metric{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background:#fff;
+    }
+
+    .metric strong{display:block;font-size:16px}
+    .metric span{font-size:10px;color:var(--muted)}
+
+    .loading{
+      display:none;
+      align-items:center;
+      gap:8px;
+      color:var(--blue);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .spinner{
+      width:15px;
+      height:15px;
+      border:2px solid #bfdbfe;
+      border-top-color:var(--blue);
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+    }
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    @media (max-width:1100px){
+      .app-shell{grid-template-columns:1fr}
+      aside{display:none}
+      .configuration{grid-template-columns:1fr}
+      .workflow{grid-template-columns:1fr}
+      .arrow-stage{height:36px;transform:rotate(90deg)}
+    }
+
+    @media (max-width:700px){
+      main{padding:16px}
+      .topbar{align-items:flex-start;flex-direction:column}
+      .model-grid,.metrics{grid-template-columns:1fr}
+      .run-panel{align-items:stretch;flex-direction:column}
+      .run-btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">⚡</div>
+        <div>
+          <strong>POTracker Studio</strong>
+          <small>Denoising & Distillation Lab</small>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Workspace</div>
+        <a class="nav-item active" href="#">🧪 Demo Playground</a>
+        <a class="nav-item" href="#">📄 Report History</a>
+        <a class="nav-item" href="#">🧩 Denoising Modules</a>
+        <a class="nav-item" href="#">🤖 Model Registry</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Monitoring</div>
+        <a class="nav-item" href="#">📊 Quality Metrics</a>
+        <a class="nav-item" href="#">📝 Run Logs</a>
+      </div>
+
+      <div class="aside-note">
+        <strong>Knowledge Distillation Mode</strong>
+        <p>Small models inherit strategy and structure-aware behavior from the teacher pipeline while keeping inference lightweight.</p>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div>
+          <h1>Outage Report Denoising Playground</h1>
+          <p>Select a model, prioritize denoising modules, tune hyperparameters, and generate a standardized outage report.</p>
+        </div>
+        <div class="status-chip"><span class="status-dot"></span> Demo environment ready</div>
+      </div>
+
+      <section class="workflow">
+        <article class="card report-card">
+          <div class="card-header">
+            <div class="header-title">
+              <div class="icon-box">📥</div>
+              <div>
+                <h2>Non-standard report</h2>
+                <span>Raw user or utility input</span>
+              </div>
+            </div>
+            <button class="ghost-btn" id="loadExample">Load example</button>
+          </div>
+          <div class="card-body">
+            <textarea id="inputReport" placeholder="Paste a non-standard outage report here...">north feeder issue around 8:13pm. 1300 cust maybe affected near ames, crew looking. est restore 11ish. cause unknown. ref id: OUT-9921</textarea>
+            <div class="small-actions">
+              <span id="charCount">0 characters</span>
+              <button class="ghost-btn" id="clearInput">Clear</button>
+            </div>
+          </div>
+        </article>
+
+        <div class="arrow-stage"><div class="arrow-line"></div></div>
+
+        <article class="card report-card output">
+          <div class="card-header">
+            <div class="header-title">
+              <div class="icon-box">✅</div>
+              <div>
+                <h2>Final outage report</h2>
+                <span>Structured, validated output</span>
+              </div>
+            </div>
+            <button class="ghost-btn" id="copyOutput">Copy JSON</button>
+          </div>
+          <div class="card-body">
+            <pre class="output-box" id="outputReport">Run the pipeline to generate a standardized outage report.</pre>
+            <div class="loading" id="loading"><span class="spinner"></span> Applying prioritized denoising pipeline...</div>
+            <div class="metrics">
+              <div class="metric"><strong id="schemaMetric">—</strong><span>Schema validity</span></div>
+              <div class="metric"><strong id="completeMetric">—</strong><span>Completeness</span></div>
+              <div class="metric"><strong id="consistencyMetric">—</strong><span>Consistency</span></div>
+              <div class="metric"><strong id="latencyMetric">—</strong><span>Latency</span></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="configuration">
+        <article class="card section-card">
+          <h3>1. Select model</h3>
+          <p class="subtitle">Original models optimize quality. Small models support efficient deployment through distilled supervision.</p>
+
+          <div class="model-group">
+            <div class="group-label"><span>Original models</span><span>Quality-first</span></div>
+            <div class="model-grid">
+              <label class="model-option selected">
+                <input type="radio" name="model" value="Qwen-7B" checked />
+                <div class="model-name">Qwen-7B</div>
+                <div class="model-meta">7B parameters · balanced</div>
+                <span class="badge">Original</span>
+              </label>
+              <label class="model-option">
+                <input type="radio" name="model" value="Mistral-8B" />
+                <div class="model-name">Mistral-8B</div>
+                <div class="model-meta">8B parameters · robust</div>
+                <span class="badge">Original</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="model-group">
+            <div class="group-label"><span>Small models</span><span>Distilled</span></div>
+            <div class="model-grid">
+              <label class="model-option small">
+                <input type="radio" name="model" value="Llama-3.2-1B" />
+                <div class="model-name">Llama-3.2-1B</div>
+                <div class="model-meta">1B parameters · compact</div>
+                <span class="badge">KD student</span>
+              </label>
+              <label class="model-option small">
+                <input type="radio" name="model" value="Mistral-1B" />
+                <div class="model-name">Mistral-1B</div>
+                <div class="model-meta">1B parameters · low latency</div>
+                <span class="badge">KD student</span>
+              </label>
+            </div>
+          </div>
+        </article>
+
+        <article class="card section-card">
+          <h3>2. Prioritize denoising functions</h3>
+          <p class="subtitle">Drag modules to change priority. Toggle modules on or off for this run.</p>
+          <div class="denoise-list" id="denoiseList">
+            <div class="denoise-item" draggable="true" data-module="Noise Type Classification">
+              <div class="priority">1</div><div class="denoise-name">🔎 Noise Type Classification</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="Schema-aware Correction">
+              <div class="priority">2</div><div class="denoise-name">🧩 Schema-aware Correction</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="Field Reconstruction">
+              <div class="priority">3</div><div class="denoise-name">📝 Field Reconstruction</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="Numeric Consistency Repair">
+              <div class="priority">4</div><div class="denoise-name">🧮 Numeric Consistency Repair</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="Temporal Consistency Repair">
+              <div class="priority">5</div><div class="denoise-name">🕒 Temporal Consistency Repair</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="Entity / Location Normalization">
+              <div class="priority">6</div><div class="denoise-name">📍 Entity / Location Normalization</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="XML / JSON Structural Repair">
+              <div class="priority">7</div><div class="denoise-name">💻 XML / JSON Structural Repair</div><div class="toggle on"></div>
+            </div>
+            <div class="denoise-item" draggable="true" data-module="Self-refinement & Verification">
+              <div class="priority">8</div><div class="denoise-name">🛡️ Self-refinement & Verification</div><div class="toggle on"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card section-card">
+          <h3>3. Hyperparameters</h3>
+          <p class="subtitle">Tune generation and verification behavior for the selected model.</p>
+          <div class="hyper-grid">
+            <div class="control">
+              <label>Temperature <output id="temperatureVal">0.2</output></label>
+              <input id="temperature" type="range" min="0" max="1" step="0.1" value="0.2" />
+            </div>
+            <div class="control">
+              <label>Top-p <output id="topPVal">0.9</output></label>
+              <input id="topP" type="range" min="0.1" max="1" step="0.1" value="0.9" />
+            </div>
+            <div class="control">
+              <label>Max output tokens <output id="tokensVal">1024</output></label>
+              <input id="tokens" type="range" min="256" max="2048" step="256" value="1024" />
+            </div>
+            <div class="control">
+              <label>Verification passes <output id="passesVal">2</output></label>
+              <input id="passes" type="range" min="1" max="5" step="1" value="2" />
+            </div>
+            <div class="control">
+              <label for="format">Output format</label>
+              <select id="format">
+                <option value="JSON">JSON</option>
+                <option value="XML">XML</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="threshold">Confidence threshold</label>
+              <input id="threshold" type="number" min="0.5" max="1" step="0.05" value="0.85" />
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="card run-panel">
+        <div class="pipeline-summary">
+          <span class="summary-step">📥 Raw report</span>
+          <span>→</span>
+          <span class="summary-step">🧹 Prioritized denoising</span>
+          <span>→</span>
+          <span class="summary-step">🎓 Distilled / original LLM</span>
+          <span>→</span>
+          <span class="summary-step">✅ Standard report</span>
+        </div>
+        <button class="run-btn" id="runBtn">⚡ Generate outage report</button>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const modelOptions = document.querySelectorAll('.model-option');
+    const radios = document.querySelectorAll('input[name="model"]');
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        modelOptions.forEach(x => x.classList.remove('selected'));
+        radio.closest('.model-option').classList.add('selected');
+      });
+    });
+
+    const bindRange = (id, outputId) => {
+      const el = document.getElementById(id);
+      const out = document.getElementById(outputId);
+      el.addEventListener('input', () => out.textContent = el.value);
+    };
+
+    bindRange('temperature','temperatureVal');
+    bindRange('topP','topPVal');
+    bindRange('tokens','tokensVal');
+    bindRange('passes','passesVal');
+
+    const input = document.getElementById('inputReport');
+    const charCount = document.getElementById('charCount');
+    const updateCount = () => charCount.textContent = `${input.value.length} characters`;
+    input.addEventListener('input', updateCount);
+    updateCount();
+
+    document.getElementById('clearInput').addEventListener('click', () => {
+      input.value = '';
+      updateCount();
+    });
+
+    document.getElementById('loadExample').addEventListener('click', () => {
+      input.value = 'north feeder issue around 8:13pm. 1300 cust maybe affected near ames, crew looking. est restore 11ish. cause unknown. ref id: OUT-9921';
+      updateCount();
+    });
+
+    document.querySelectorAll('.toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('on');
+        toggle.closest('.denoise-item').classList.toggle('disabled');
+      });
+    });
+
+    const list = document.getElementById('denoiseList');
+    let dragged = null;
+
+    list.addEventListener('dragstart', e => {
+      dragged = e.target.closest('.denoise-item');
+      if (dragged) dragged.style.opacity = '.45';
+    });
+
+    list.addEventListener('dragend', () => {
+      if (dragged) dragged.style.opacity = '1';
+      dragged = null;
+      updatePriorities();
+    });
+
+    list.addEventListener('dragover', e => {
+      e.preventDefault();
+      const target = e.target.closest('.denoise-item');
+      if (!target || target === dragged) return;
+      const rect = target.getBoundingClientRect();
+      const after = e.clientY > rect.top + rect.height / 2;
+      list.insertBefore(dragged, after ? target.nextSibling : target);
+    });
+
+    function updatePriorities(){
+      [...list.children].forEach((item, i) => {
+        item.querySelector('.priority').textContent = i + 1;
+      });
+    }
+
+    function selectedModules(){
+      return [...document.querySelectorAll('.denoise-item')]
+        .filter(item => item.querySelector('.toggle').classList.contains('on'))
+        .map(item => item.dataset.module);
+    }
+
+    function buildJSON(model, modules){
+      return {
+        report_id: "OUT-9921",
+        generated_by: model,
+        report_type: "utility_outage",
+        status: "active",
+        location: {
+          city: "Ames",
+          service_area: "North Feeder"
+        },
+        outage: {
+          start_time: "2026-07-15T20:13:00-05:00",
+          estimated_restoration_time: "2026-07-15T23:00:00-05:00",
+          customers_affected: 1300,
+          cause: "under_investigation",
+          crew_status: "dispatched"
+        },
+        quality: {
+          confidence: Number(document.getElementById('threshold').value),
+          schema_valid: true,
+          denoising_modules_applied: modules
+        }
+      };
+    }
+
+    function buildXML(model, modules){
+      return `<OutageReport>
+  <ReportID>OUT-9921</ReportID>
+  <GeneratedBy>${model}</GeneratedBy>
+  <Status>active</Status>
+  <Location>
+    <City>Ames</City>
+    <ServiceArea>North Feeder</ServiceArea>
+  </Location>
+  <Outage>
+    <StartTime>2026-07-15T20:13:00-05:00</StartTime>
+    <EstimatedRestorationTime>2026-07-15T23:00:00-05:00</EstimatedRestorationTime>
+    <CustomersAffected>1300</CustomersAffected>
+    <Cause>under_investigation</Cause>
+    <CrewStatus>dispatched</CrewStatus>
+  </Outage>
+  <Quality>
+    <Confidence>${document.getElementById('threshold').value}</Confidence>
+    <SchemaValid>true</SchemaValid>
+    <DenoisingModules>${modules.join(', ')}</DenoisingModules>
+  </Quality>
+</OutageReport>`;
+    }
+
+    const runBtn = document.getElementById('runBtn');
+    const loading = document.getElementById('loading');
+    const output = document.getElementById('outputReport');
+
+    runBtn.addEventListener('click', () => {
+      if (!input.value.trim()) {
+        alert('Please enter a non-standard outage report.');
+        return;
+      }
+
+      const model = document.querySelector('input[name="model"]:checked').value;
+      const modules = selectedModules();
+      const format = document.getElementById('format').value;
+
+      runBtn.disabled = true;
+      runBtn.textContent = 'Processing...';
+      loading.style.display = 'flex';
+      output.textContent = '';
+
+      setTimeout(() => {
+        if (format === 'JSON') {
+          output.textContent = JSON.stringify(buildJSON(model, modules), null, 2);
+        } else {
+          output.textContent = buildXML(model, modules);
+        }
+
+        const isSmall = model.includes('1B') || model.includes('1b');
+        document.getElementById('schemaMetric').textContent = '100%';
+        document.getElementById('completeMetric').textContent = modules.length >= 6 ? '96%' : '89%';
+        document.getElementById('consistencyMetric').textContent = modules.includes('Numeric Consistency Repair') ? '97%' : '88%';
+        document.getElementById('latencyMetric').textContent = isSmall ? '0.8 s' : '2.4 s';
+
+        runBtn.disabled = false;
+        runBtn.textContent = '⚡ Generate outage report';
+        loading.style.display = 'none';
+      }, 900);
+    });
+
+    document.getElementById('copyOutput').addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(output.textContent);
+        const btn = document.getElementById('copyOutput');
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = old, 1200);
+      }catch{
+        alert('Copy is not available in this browser context.');
+      }
+    });
+  </script>
+</body>
+</html>
