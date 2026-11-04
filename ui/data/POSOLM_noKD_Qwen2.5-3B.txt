@@ -1,0 +1,11 @@
+
+<OutageReport>
+  <EventID>125031145</EventID>
+  <CustomerImpact count="12500" verification="pending" />
+  <Timeline>
+    <Start>2025-03-07T18:30:00</Start>
+    <RestorationEstimate>2025-03-07T20:00:00</RestorationEstimate>
+  </Timeline>
+  <ServiceArea city="Ames" county="Story" state="IA" />
+  <IncidentSummary>Outage reported. Cause is unconfirmed; customer count requires verification.</IncidentSummary>
+</OutageReport>

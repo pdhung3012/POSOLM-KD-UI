@@ -1,0 +1,10 @@
+<electricOutages>
+  <outage>
+    <id>125031145</id>
+    <customerCount>1250O</customerCount>
+    <reportedStartTime>2025-03-07T18:30:00</reportedStartTime>
+    <estimatedRestoreTime>2025-03-07T17:00:00</estimatedRestoreTime>
+    <location>Amess, Story Countyy, IA</location>
+    <description>BIG OUTAGE!!! Maybe 1250 or 12500 customers??? Transformer explodded?? NOT CONFIRMED!!!</description>
+  </outage>
+</electricOutages>

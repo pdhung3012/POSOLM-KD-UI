@@ -1,0 +1,12 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:PubOutages xmlns:ns0="http://iec.ch/TC57/2014/PubOutages#">
+  <ns0:Outage>
+    <ns0:mRID>125031145</ns0:mRID>
+    <ns0:originalCustomersAffected>12500</ns0:originalCustomersAffected>
+    <ns0:reportedStartTime>2025-03-07T18:30:00</ns0:reportedStartTime>
+    <ns0:estimatedRestorationTime>2025-03-07T20:00:00</ns0:estimatedRestorationTime>
+    <ns0:location>Ames, Story County, IA</ns0:location>
+    <ns0:status>Outage reported; cause and customer count awaiting verification.</ns0:status>
+  </ns0:Outage>
+</ns0:PubOutages>
