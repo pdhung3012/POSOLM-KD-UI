@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>POTracker Studio — Model Comparison Demo</title>
+  <title>POTracker Studio — Live Local Inference</title>
   <style>
     :root{
       --bg:#f4f7fb;
@@ -656,51 +656,24 @@
               <div class="icon-box">✅</div>
               <div>
                 <h2>Final outage report</h2>
-                <span>Model-specific XML demonstration output</span>
+                <span>Live inference from selected model</span>
               </div>
             </div>
             <button class="ghost-btn" id="copyOutput">Copy output</button>
           </div>
           <div class="card-body">
-            <pre class="output-box" id="outputReport">Run the pipeline to generate a standardized outage report.</pre>
-            <div class="loading" id="loading"><span class="spinner"></span> Loading demonstration output...</div>
-            <div class="accuracy-panel" aria-live="polite">
+            <pre class="output-box" id="outputReport">Enter a report and click Generate to run local inference.</pre>
+            <div class="loading" id="loading"><span class="spinner"></span> Running local model inference...</div>
+            <!-- <div class="accuracy-panel" aria-live="polite">
               <div>
                 <div class="accuracy-label">Overall Accuracy</div>
-                <div class="accuracy-note">Text token cosine similarity to data/label.txt · demo outputs</div>
+                <div class="accuracy-note">Token cosine similarity only for bundled sample · not model accuracy</div>
               </div>
               <strong id="accuracyMetric">—</strong>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section class="configuration">
-        <article class="card section-card">
-          <h3>1. Select model</h3>
-          <p class="subtitle">Compare the original POTracker model with the small language model, before and after knowledge distillation.</p>
-
-          <div class="model-group">
-            <div class="group-label"><span>POTracker</span><span>Original model</span></div>
-            <div class="model-grid">
-              <label class="model-option">
-                <input type="radio" name="model" value="POTracker-Qwen2.5-7B-Instruct" />
-                <div class="model-name">Qwen2.5-7B-Instruct</div>
-                <div class="model-meta">7B parameters · POTracker</div>
-                <span class="badge">Original (POTracker)</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="model-group">
+            </div> -->
+            <div class="model-group">
             <div class="group-label"><span>POSOLM</span><span>Small models</span></div>
             <div class="model-grid">
-              <label class="model-option small">
-                <input type="radio" name="model" value="POSOLM-Qwen2.5-3B-no-KD" />
-                <div class="model-name">Qwen2.5-3B</div>
-                <div class="model-meta">3B parameters · without knowledge distillation</div>
-                <span class="badge">POSOLM without KD</span>
-              </label>
               <label class="model-option small selected">
                 <input type="radio" name="model" value="POSOLM-KD-Qwen2.5-3B" checked />
                 <div class="model-name">Qwen2.5-3B</div>
@@ -710,17 +683,14 @@
             </div>
           </div>
 
-          <div class="model-group">
-            <div class="group-label"><span>Reference</span><span>Ground truth</span></div>
-            <div class="model-grid">
-              <label class="model-option ground-truth-option">
-                <input type="radio" name="model" value="Gemini-Ground-Truth" />
-                <div class="model-name">Display Ground-truth data from Gemini</div>
-                <div class="model-meta">Reference XML · data/label.txt</div>
-                <span class="badge">Ground truth · 100%</span>
-              </label>
-            </div>
           </div>
+        </article>
+      </section>
+
+      <!-- <section class="configuration">
+        <article class="card section-card">
+ 
+          
         </article>
 
         <article class="card section-card">
@@ -787,7 +757,7 @@
             </div>
           </div>
         </article>
-      </section>
+      </section> -->
 
       <section class="card run-panel">
         <div class="pipeline-summary">
@@ -818,30 +788,30 @@
         const isGroundTruth = radio.value === 'Gemini-Ground-Truth';
         const button = document.getElementById('runBtn');
         const reportBox = document.getElementById('outputReport');
-        const accuracy = document.getElementById('accuracyMetric');
+        // const accuracy = document.getElementById('accuracyMetric');
         const loadingIndicator = document.getElementById('loading');
         button.disabled = isGroundTruth;
         button.textContent = '⚡ Generate outage report';
         loadingIndicator.style.display = 'none';
-        if (isGroundTruth) {
-          reportBox.textContent = 'Loading ground-truth report...';
-          accuracy.textContent = '—';
-          try {
-            const reference = await readDemoFile('./data/label.txt', bundledLabel);
-            if (version !== selectionVersion) return;
-            reportBox.textContent = reference;
-            accuracy.textContent = '100%';
-          } catch (error) {
-            if (version !== selectionVersion) return;
-            console.error('Unable to load ground-truth report:', error);
-            reportBox.textContent = 'Could not load data/label.txt.';
-            accuracy.textContent = 'N/A';
-          }
-        } else {
-          // A different model is selected; its report appears on Generate.
-          reportBox.textContent = 'Click Generate outage report to display the selected model output.';
-          accuracy.textContent = '—';
-        }
+        // if (isGroundTruth) {
+        //   reportBox.textContent = 'Loading ground-truth report...';
+        //   accuracy.textContent = '—';
+        //   try {
+        //     const reference = await readDemoFile('./data/label.txt', bundledLabel);
+        //     if (version !== selectionVersion) return;
+        //     reportBox.textContent = reference;
+        //     accuracy.textContent = '100%';
+        //   } catch (error) {
+        //     if (version !== selectionVersion) return;
+        //     console.error('Unable to load ground-truth report:', error);
+        //     reportBox.textContent = 'Could not load data/label.txt.';
+        //     accuracy.textContent = 'N/A';
+        //   }
+        // } else {
+        //   // A different model is selected; its report appears on Generate.
+        //   reportBox.textContent = 'Click Generate outage report to display the selected model output.';
+        //   accuracy.textContent = '—';
+        // }
       });
     });
 
@@ -851,10 +821,10 @@
       el.addEventListener('input', () => out.textContent = el.value);
     };
 
-    bindRange('temperature','temperatureVal');
-    bindRange('topP','topPVal');
-    bindRange('tokens','tokensVal');
-    bindRange('passes','passesVal');
+    // bindRange('temperature','temperatureVal');
+    // bindRange('topP','topPVal');
+    // bindRange('tokens','tokensVal');
+    // bindRange('passes','passesVal');
 
     const input = document.getElementById('inputReport');
     const charCount = document.getElementById('charCount');
@@ -900,28 +870,28 @@
       });
     });
 
-    const list = document.getElementById('denoiseList');
-    let dragged = null;
+    // const list = document.getElementById('denoiseList');
+    // let dragged = null;
 
-    list.addEventListener('dragstart', e => {
-      dragged = e.target.closest('.denoise-item');
-      if (dragged) dragged.style.opacity = '.45';
-    });
+    // list.addEventListener('dragstart', e => {
+    //   dragged = e.target.closest('.denoise-item');
+    //   if (dragged) dragged.style.opacity = '.45';
+    // });
 
-    list.addEventListener('dragend', () => {
-      if (dragged) dragged.style.opacity = '1';
-      dragged = null;
-      updatePriorities();
-    });
+    // list.addEventListener('dragend', () => {
+    //   if (dragged) dragged.style.opacity = '1';
+    //   dragged = null;
+    //   updatePriorities();
+    // });
 
-    list.addEventListener('dragover', e => {
-      e.preventDefault();
-      const target = e.target.closest('.denoise-item');
-      if (!target || target === dragged) return;
-      const rect = target.getBoundingClientRect();
-      const after = e.clientY > rect.top + rect.height / 2;
-      list.insertBefore(dragged, after ? target.nextSibling : target);
-    });
+    // list.addEventListener('dragover', e => {
+    //   e.preventDefault();
+    //   const target = e.target.closest('.denoise-item');
+    //   if (!target || target === dragged) return;
+    //   const rect = target.getBoundingClientRect();
+    //   const after = e.clientY > rect.top + rect.height / 2;
+    //   list.insertBefore(dragged, after ? target.nextSibling : target);
+    // });
 
     function updatePriorities(){
       [...list.children].forEach((item, i) => {
@@ -990,8 +960,8 @@
 
     // Model outputs are pre-generated illustrative samples, not live model inference.
     // With HTTP, always read the requested file; file:// uses bundled copies.
-    const modelFiles = {"POTracker-Qwen2.5-7B-Instruct": "POTracker_Qwen2.5-7B-Instruct.txt", "POSOLM-Qwen2.5-3B-no-KD": "POSOLM_noKD_Qwen2.5-3B.txt", "POSOLM-KD-Qwen2.5-3B": "POSOLM_KD_Qwen2.5-3B.txt"};
-    const bundledModelOutputs = {"POTracker-Qwen2.5-7B-Instruct": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<electricOutages>\n  <outage>\n    <id>125031145</id>\n    <customerCount>1250O</customerCount>\n    <reportedStartTime>2025-03-07T18:30:00</reportedStartTime>\n    <estimatedRestoreTime>2025-03-07T17:00:00</estimatedRestoreTime>\n    <location>Amess, Story Countyy, IA</location>\n    <description>BIG OUTAGE!!! Maybe 1250 or 12500 customers??? Transformer explodded?? NOT CONFIRMED!!!</description>\n  </outage>\n</electricOutages>\n", "POSOLM-Qwen2.5-3B-no-KD": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<OutageReport>\n  <EventID>125031145</EventID>\n  <CustomerImpact count=\"12500\" verification=\"pending\" />\n  <Timeline>\n    <Start>2025-03-07T18:30:00</Start>\n    <RestorationEstimate>2025-03-07T20:00:00</RestorationEstimate>\n  </Timeline>\n  <ServiceArea city=\"Ames\" county=\"Story\" state=\"IA\" />\n  <IncidentSummary>Outage reported. Cause is unconfirmed; customer count requires verification.</IncidentSummary>\n</OutageReport>\n", "POSOLM-KD-Qwen2.5-3B": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ns0:PubOutages xmlns:ns0=\"http://iec.ch/TC57/2014/PubOutages#\">\n  <ns0:Outage>\n    <ns0:mRID>125031145</ns0:mRID>\n    <ns0:originalCustomersAffected>12500</ns0:originalCustomersAffected>\n    <ns0:reportedStartTime>2025-03-07T18:30:00</ns0:reportedStartTime>\n    <ns0:estimatedRestorationTime>2025-03-07T20:00:00</ns0:estimatedRestorationTime>\n    <ns0:location>Ames, Story County, IA</ns0:location>\n    <ns0:status>Outage reported; cause and customer count awaiting verification.</ns0:status>\n  </ns0:Outage>\n</ns0:PubOutages>\n"};
+    const modelFiles = { "POSOLM-KD-Qwen2.5-3B": "POSOLM_KD_Qwen2.5-3B.txt"};
+    const bundledModelOutputs = { "POSOLM-KD-Qwen2.5-3B": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ns0:PubOutages xmlns:ns0=\"http://iec.ch/TC57/2014/PubOutages#\">\n  <ns0:Outage>\n    <ns0:mRID>125031145</ns0:mRID>\n    <ns0:originalCustomersAffected>12500</ns0:originalCustomersAffected>\n    <ns0:reportedStartTime>2025-03-07T18:30:00</ns0:reportedStartTime>\n    <ns0:estimatedRestorationTime>2025-03-07T20:00:00</ns0:estimatedRestorationTime>\n    <ns0:location>Ames, Story County, IA</ns0:location>\n    <ns0:status>Outage reported; cause and customer count awaiting verification.</ns0:status>\n  </ns0:Outage>\n</ns0:PubOutages>\n"};
     const bundledLabel = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ns0:PubOutages xmlns:ns0=\"http://iec.ch/TC57/2014/PubOutages#\">\n  <ns0:Outage>\n    <ns0:mRID>125031145</ns0:mRID>\n    <ns0:originalCustomersAffected>12500</ns0:originalCustomersAffected>\n    <ns0:reportedStartTime>2025-03-07T18:30:00</ns0:reportedStartTime>\n    <ns0:estimatedRestorationTime>2025-03-07T20:00:00</ns0:estimatedRestorationTime>\n    <ns0:location>Ames, Story County, IA</ns0:location>\n    <ns0:status>Outage reported; cause and customer count pending verification.</ns0:status>\n  </ns0:Outage>\n</ns0:PubOutages>";
 
     async function readDemoFile(path, offlineFallback) {
@@ -1021,37 +991,41 @@
     }
 
     runBtn.addEventListener('click', async () => {
-      if (document.querySelector('input[name="model"]:checked')?.value === 'Gemini-Ground-Truth') return;
-      if (!input.value.trim()) {
-        alert('Please enter a non-standard outage report.');
-        return;
-      }
       const selectedModel = document.querySelector('input[name="model"]:checked')?.value;
-      const filename = modelFiles[selectedModel];
-      if (!filename) { alert('Please select a model.'); return; }
-
+      if (selectedModel === 'Gemini-Ground-Truth') return;
+      if (!input.value.trim()) { alert('Please enter a non-standard outage report.'); return; }
       const version = ++selectionVersion;
       runBtn.disabled = true;
-      runBtn.textContent = 'Loading report...';
+      runBtn.textContent = 'Generating with local model...';
       loading.style.display = 'flex';
       output.textContent = '';
-      document.getElementById('accuracyMetric').textContent = '—';
-
+      // document.getElementById('accuracyMetric').textContent = '—';
+      const activeModules = Array.from(document.querySelectorAll('.denoise-item'))
+        .filter(item => item.querySelector('.toggle')?.classList.contains('on'))
+        .map(item => item.dataset.module);
       try {
-        const [prediction, groundTruth] = await Promise.all([
-          readDemoFile('./data/' + filename, bundledModelOutputs[selectedModel]),
-          readDemoFile('./data/label.txt', bundledLabel)
-        ]);
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: selectedModel, input: input.value, modules: activeModules,
+            // temperature: Number(document.getElementById('temperature').value),
+            // top_p: Number(document.getElementById('topP').value),
+            // max_new_tokens: Number(document.getElementById('tokens').value),
+            // verification_passes: Number(document.getElementById('passes').value),
+            // format: document.getElementById('format').value
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
         if (version !== selectionVersion) return;
-        output.textContent = prediction;
-        document.getElementById('accuracyMetric').textContent =
-          (textCosineSimilarity(prediction, groundTruth) * 100).toFixed(1) + '%';
+        output.textContent = data.output;
+        // document.getElementById('accuracyMetric').textContent =
+        //   data.similarity === null ? 'N/A' : `${data.similarity.toFixed(1)}%`;
       } catch (error) {
         if (version !== selectionVersion) return;
-        console.error('Unable to load comparison files:', error);
-        output.textContent = 'Could not load the selected report or data/label.txt. ' +
-          'Check that both files exist in the data/ folder and use a local HTTP server.';
-        document.getElementById('accuracyMetric').textContent = 'N/A';
+        output.textContent = `Generation failed: ${error.message}`;
+        // document.getElementById('accuracyMetric').textContent = 'N/A';
       } finally {
         if (version === selectionVersion) {
           runBtn.disabled = document.querySelector('input[name="model"]:checked')?.value === 'Gemini-Ground-Truth';

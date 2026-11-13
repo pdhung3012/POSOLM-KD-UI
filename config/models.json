@@ -1,0 +1,10 @@
+{
+  "models": {
+    "POSOLM-KD-Qwen2.5-3B": {
+      "model_path": "/home/hungphd/posolm_models_nov_2026/qwen2.5-3B/org/",
+      "weights_path": "/home/hungphd/posolm_models_nov_2026/qwen2.5-3B/weights",
+      "checkpoint_type": "auto",
+      "tokenizer_path": ""
+    }
+  }
+}

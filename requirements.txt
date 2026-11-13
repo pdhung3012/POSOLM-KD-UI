@@ -1,0 +1,6 @@
+flask>=3.0,<4
+transformers>=4.45,<5
+accelerate>=0.34
+safetensors>=0.4
+torch>=2.3
+peft>=0.12
