@@ -1,0 +1,20 @@
+# Copy to .env and change host directories to your actual absolute paths.
+HOST_PORT=5000
+HOST_MODELS_DIR=/home/hungphd/models
+HOST_CHECKPOINTS_DIR=/home/hungphd/checkpoints
+
+# Paths below are *inside* Docker, NOT host paths.
+# Base public Qwen model (can also be /models/Qwen2.5-3B if downloaded locally).
+BASE_MODEL_PATH=Qwen/Qwen2.5-3B
+BASE_WEIGHTS_PATH=
+BASE_CHECKPOINT_TYPE=auto
+
+# Fine-tuned small model: full model checkpoint or PEFT/LoRA adapter
+KD_MODEL_PATH=/models/Qwen2.5-3B
+KD_WEIGHTS_PATH=/checkpoints/POSOLM-KD
+KD_CHECKPOINT_TYPE=auto
+
+# Fine-tuned 7B model
+POTRACKER_MODEL_PATH=/models/Qwen2.5-7B-Instruct
+POTRACKER_WEIGHTS_PATH=/checkpoints/POTracker
+POTRACKER_CHECKPOINT_TYPE=auto
