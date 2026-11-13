@@ -1,0 +1,38 @@
+# NVIDIA GPU deployment: docker compose up --build -d
+services:
+  posolm-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: posolm-kd-ui:gpu
+    ports:
+      - "${HOST_PORT:-5000}:5000"
+    gpus: all
+    environment:
+      HF_HOME: /cache/huggingface
+      BASE_MODEL_PATH: ${BASE_MODEL_PATH:-Qwen/Qwen2.5-3B}
+      BASE_WEIGHTS_PATH: ${BASE_WEIGHTS_PATH:-}
+      BASE_CHECKPOINT_TYPE: ${BASE_CHECKPOINT_TYPE:-auto}
+      KD_MODEL_PATH: ${KD_MODEL_PATH:-}
+      KD_WEIGHTS_PATH: ${KD_WEIGHTS_PATH:-}
+      KD_CHECKPOINT_TYPE: ${KD_CHECKPOINT_TYPE:-auto}
+      POTRACKER_MODEL_PATH: ${POTRACKER_MODEL_PATH:-}
+      POTRACKER_WEIGHTS_PATH: ${POTRACKER_WEIGHTS_PATH:-}
+      POTRACKER_CHECKPOINT_TYPE: ${POTRACKER_CHECKPOINT_TYPE:-auto}
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - ${HOST_MODELS_DIR:-./local-models}:/models:ro
+      - ${HOST_CHECKPOINTS_DIR:-./local-checkpoints}:/checkpoints:ro
+      - ./config:/app/config:ro
+      - hf-cache:/cache/huggingface
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/api/models', timeout=10)"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  hf-cache:
