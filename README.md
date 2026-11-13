@@ -71,14 +71,8 @@ Example (replace these sample directories with your real ones):
 ```json
 {
   "models": {
-    "POSOLM-Qwen2.5-3B-no-KD": {
-      "model_path": "/models/Qwen2.5-3B", "weights_path": "", "checkpoint_type": "auto"
-    },
     "POSOLM-KD-Qwen2.5-3B": {
       "model_path": "/models/Qwen2.5-3B", "weights_path": "/checkpoints/POSOLM-KD", "checkpoint_type": "auto"
-    },
-    "POTracker-Qwen2.5-7B-Instruct": {
-      "model_path": "/models/Qwen2.5-7B-Instruct", "weights_path": "/checkpoints/POTracker", "checkpoint_type": "auto"
     }
   }
 }
